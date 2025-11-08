@@ -2,13 +2,13 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-from .models import Supplier
-from .serializers import SupplierSerializer
+from .models import Supplier, LinkRequest
+from .serializers import SupplierSerializer, LinkRequestSerializer
 from users.permissions import IsOwnerOrManager
 import traceback
 from users.models import User
 
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, generics
 from .models import Supplier
 
 class SupplierViewSet(viewsets.ModelViewSet):
@@ -136,3 +136,62 @@ class EmployeeManageView(APIView):
             return Response({"detail": "Supplier not found."}, status=status.HTTP_404_NOT_FOUND)
         except User.DoesNotExist:
             return Response({"detail": "Employee not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+class LinkRequestCreateView(generics.CreateAPIView):
+    # Consumer >> request >> supplier.
+    serializer_class = LinkRequestSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        if user.role != 'consumer':
+            raise PermissionError("Only consumers can send link requests, you are not.")
+
+        supplier_id = self.request.data.get('supplier')
+        try:
+            supplier = Supplier.objects.get(id=supplier_id)
+        except Supplier.DoesNotExist:
+            raise ValueError("Supplier not found.")
+
+        serializer.save(consumer=user, supplier=supplier)
+
+
+class LinkRequestListView(generics.ListAPIView):
+    # get orders for manager and owner.
+    serializer_class = LinkRequestSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == 'owner':
+            return LinkRequest.objects.filter(supplier__owner=user)
+        elif user.role == 'manager':
+            return LinkRequest.objects.filter(supplier__employees=user)
+        elif user.role == 'consumer':
+            return LinkRequest.objects.filter(consumer=user)
+        return LinkRequest.objects.none()
+
+
+class LinkRequestUpdateView(generics.UpdateAPIView):
+    # reject or accept the link request.
+    serializer_class = LinkRequestSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = LinkRequest.objects.all()
+
+    def patch(self, request, *args, **kwargs):
+        link = self.get_object()
+        user = request.user
+
+        if user.role not in ['owner', 'manager']:
+            return Response({"detail": "Permission denied."}, status=403)
+
+        new_status = request.data.get('status')
+        if new_status not in ['accepted', 'rejected', 'blocked']:
+            return Response({"detail": "Invalid status."}, status=400)
+
+        link.status = new_status
+        link.save()
+        return Response({
+            "message": f"Link request has been {new_status}.",
+            "link": LinkRequestSerializer(link).data
+        })

@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
@@ -47,6 +48,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -141,6 +143,10 @@ REST_FRAMEWORK = {
     ),
 }
 
+#CORS_ALLOWED_ORIGINS = [
+#    "http://localhost:5173",
+#]
+
 CORS_ALLOW_ALL_ORIGINS = True
 
 AUTH_USER_MODEL = 'users.User'
@@ -148,8 +154,8 @@ AUTH_USER_MODEL = 'users.User'
 from datetime import timedelta
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),  # токен живёт 1 час
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),    # refresh-токен живёт 1 день
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=10),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),    
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,
     'AUTH_HEADER_TYPES': ('Bearer',),
