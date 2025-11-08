@@ -4,18 +4,42 @@ from .models import Order
 from .serializers import OrderSerializer
 from products.models import Product
 
-class OrderCreateView(generics.CreateAPIView):
+class OrderListCreateView(generics.ListCreateAPIView):
     serializer_class = OrderSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == 'consumer':
+            return Order.objects.filter(consumer=user)
+        elif user.role in ['manager', 'sales', 'owner']:
+            return Order.objects.filter(product__supplier__owner=user)
+        return Order.objects.none()
+
     def perform_create(self, serializer):
+        user = self.request.user
         product_id = self.request.data.get('product')
         quantity = int(self.request.data.get('quantity', 1))
 
-        product = Product.objects.get(id=product_id)
-        total_price = product.price * quantity
+        # Ensure only consumers can order
+        if user.role != "consumer":
+            raise PermissionError("Only consumers can place orders.")
 
-        serializer.save(consumer=self.request.user, total_price=total_price)
+        try:
+            product = Product.objects.get(id=product_id)
+        except Product.DoesNotExist:
+            raise ValueError("Product not found.")
+
+        # Check stock
+        if product.stock < quantity:
+            raise ValueError("Not enough stock available.")
+
+        total_price = product.price * quantity
+        order = serializer.save(consumer=user, product=product, quantity=quantity, total_price=total_price)
+
+        product.stock -= quantity
+        product.save()
+        return order
 
 class OrderUpdateStatusView(generics.UpdateAPIView):
     queryset = Order.objects.all()
@@ -27,7 +51,7 @@ class OrderUpdateStatusView(generics.UpdateAPIView):
         user = request.user
 
         # Only sales, manager, owner can change the status of the order.
-        if user.role not in ['manager', 'sales', 'owner']:
+        if user.role not in ['manager', 'owner']:
             return Response({"detail": "You don't have permission to change status."}, status=403)
 
         status = request.data.get("status")
@@ -36,21 +60,16 @@ class OrderUpdateStatusView(generics.UpdateAPIView):
         if status not in allowed_statuses:
             return Response({"detail": "Invalid status value."}, status=400)
 
+        # If cancel → restore stock
+        if status == "cancelled" and order.status != "cancelled":
+            product = order.product
+            product.stock += order.quantity
+            product.save()
+
         order.status = status
         order.save()
+
         return Response({
             "message": f"Order #{order.id} status updated to '{status}'.",
             "order": OrderSerializer(order).data
         })
-    
-class OrderListView(generics.ListAPIView):
-    serializer_class = OrderSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        user = self.request.user
-        if user.role == 'consumer':
-            return Order.objects.filter(consumer=user)
-        elif user.role in ['manager', 'sales', 'owner']:
-            return Order.objects.filter(product__supplier__owner=user)
-        return Order.objects.none()

@@ -1,4 +1,3 @@
-// frontend/src/pages/OwnerDashboard.jsx
 import { useEffect, useState } from "react";
 import productApi from "../api/productApi";
 import { useNavigate } from "react-router-dom";
@@ -11,8 +10,8 @@ function OwnerDashboard() {
 
   // Login check
   const user = JSON.parse(localStorage.getItem("user"));
-  if (!user || user.role !== "owner") {
-    navigate("/");
+  if (!user || (user.role !== "owner" && user.role !== "manager")) {
+    navigate("/dashboard");
   }
 
   // Loading products

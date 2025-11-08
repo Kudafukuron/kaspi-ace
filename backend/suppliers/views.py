@@ -61,7 +61,7 @@ class SupplierEmployeesView(APIView):
             # filter to supplier.
             employees = User.objects.filter(supplier=supplier).values(
                 "id", "username", "email", "role", "is_active"
-            )
+            ).exclude(role="consumer")
 
             return Response({
                 "supplier": supplier.name,
@@ -88,6 +88,18 @@ class EmployeeManageView(APIView):
             if request.user.role == 'manager' and employee.role in ['owner', 'manager']:
                 return Response(
                     {"detail": "Managers cannot modify other managers or owners."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
+            if request.user.role == 'sales':
+                return Response(
+                    {"detail": "Sales are not allowed to modify"},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+            if request.user.role == 'customer':
+                return Response(
+                    {"detail": "What are you doing here, sneaky guy?"},
                     status=status.HTTP_403_FORBIDDEN
                 )
 
@@ -119,9 +131,9 @@ class EmployeeManageView(APIView):
             employee = User.objects.get(id=employee_id, supplier=supplier)
 
             # If manager tries to delete (guy wants too much power)
-            if request.user.role == 'manager' and employee.role in ['owner', 'manager']:
+            if request.user.role != 'owner':
                 return Response(
-                    {"detail": "Managers can only delete sales employees."},
+                    {"detail": "Only owners have permission to delete!"},
                     status=status.HTTP_403_FORBIDDEN
                 )
 

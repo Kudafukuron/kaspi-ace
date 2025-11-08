@@ -1,0 +1,68 @@
+import React from "react";
+import { Link, useNavigate } from "react-router-dom";
+
+const Navbar = () => {
+  const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/");
+  };
+
+  return (
+    <nav
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: "20px 20px",
+        backgroundColor: "#222",
+        color: "#fff",
+        gap: "20px",
+      }}
+    >
+      <h3>Kaspi-ACE</h3>
+      <div style={{ display: "flex", gap: "20px" }}>
+        {user?.role === "owner" && (
+          <>
+            <Link to="/dashboard" style={{ color: "#fff" }}>Dashboard</Link>
+            <Link to="/dashboard/links" style={{ color: "#fff" }}>Link Requests</Link>
+            <Link to="/dashboard/supplier" style={{ color: "#fff" }}>Company Employees</Link>
+            <Link to="/dashboard/orders" style={{ color: "#fff" }}>Orders</Link>
+          </>
+        )}
+
+        {user?.role === "manager" && (
+          <>
+            <Link to="/dashboard" style={{ color: "#fff" }}>Dashboard</Link>
+            <Link to="/dashboard/links" style={{ color: "#fff" }}>Link Requests</Link>
+            <Link to="/dashboard/supplier" style={{ color: "#fff" }}>Company Employees</Link>
+            <Link to="/dashboard/orders" style={{ color: "#fff" }}>Orders</Link>
+            <Link to="/owner" style={{ color: "#fff" }}>Add Product</Link>
+          </>
+        )}
+
+        {user?.role === "consumer" && (
+          <Link to="/consumer" style={{ color: "#fff" }}>Shop</Link>
+        )}
+
+        <button
+          onClick={handleLogout}
+          style={{
+            background: "crimson",
+            border: "none",
+            color: "#fff",
+            padding: "5px 10px",
+            borderRadius: "5px",
+            cursor: "pointer",
+          }}
+        >
+          Logout
+        </button>
+      </div>
+    </nav>
+  );
+};
+
+export default Navbar;

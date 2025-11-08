@@ -15,17 +15,16 @@ export const consumerApi = {
   },
 
   async getProducts() {
-    const res = await axiosClient.get("products/");
+    const res = await axiosClient.get("/products/");
     return res.data;
   },
 
   async getOrders() {
-    const res = await axiosClient.get("orders/");
+    const res = await axiosClient.get("/orders/");
     return res.data;
   },
 
   async createOrder(productId, quantity = 1) {
-    const res = await axiosClient.post("orders/", { product: productId, quantity });
-    return res.data;
+    return axiosClient.post("/orders/", { product: productId, quantity });
   },
 };

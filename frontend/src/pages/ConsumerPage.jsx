@@ -27,14 +27,21 @@ const ConsumerPage = () => {
   }, []);
 
   const handleOrder = async (productId) => {
-    try {
-      const order = await consumerApi.createOrder(productId);
-      alert(`Order placed for product ID ${productId}`);
-      setOrders((prev) => [...prev, order]); // add new order to list
-    } catch (err) {
-      alert("Failed to create order. Maybe token expired?");
-    }
-  };
+  const quantity = parseInt(prompt("Enter quantity:", 1));
+  if (isNaN(quantity) || quantity <= 0) {
+    alert("Invalid quantity.");
+    return;
+  }
+
+  try {
+    const order = await consumerApi.createOrder(productId, quantity);
+    alert(`Order placed for ${quantity} units of product ID ${productId}`);
+    setOrders((prev) => [...prev, order]);
+  } catch (err) {
+    alert("Failed to create order. Maybe token expired?");
+  }
+};
+
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p style={{ color: "red" }}>{error}</p>;
