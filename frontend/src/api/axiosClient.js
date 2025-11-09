@@ -5,7 +5,7 @@ const axiosInstance = axios.create({
 });
 
 axiosInstance.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("access");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -26,7 +26,7 @@ axiosInstance.interceptors.response.use(
           const res = await axios.post("http://127.0.0.1:8000/api/auth/token/refresh/", {
             refresh,
           });
-          localStorage.setItem("token", res.data.access);
+          localStorage.setItem("access", res.data.access);
           axiosInstance.defaults.headers.Authorization = `Bearer ${res.data.access}`;
           return axiosInstance(originalRequest);
         } catch (refreshError) {

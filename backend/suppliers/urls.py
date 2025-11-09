@@ -1,5 +1,5 @@
 from rest_framework import routers
-from .views import SupplierViewSet, DeactivateSupplierView, ActivateSupplierView, SupplierEmployeesView, EmployeeManageView, LinkRequestCreateView, LinkRequestListView, LinkRequestUpdateView
+from .views import SupplierViewSet, DeactivateSupplierView, ActivateSupplierView, EmployeeManageView, LinkRequestCreateView, LinkRequestListView, LinkRequestUpdateView, MySupplierView, SupplierEmployeesView
 from django.urls import path, include
 
 router = routers.DefaultRouter()
@@ -14,5 +14,6 @@ urlpatterns = [
     path('links/', LinkRequestListView.as_view(), name='link-list'),
     path('links/create/', LinkRequestCreateView.as_view(), name='link-create'),
     path('links/<int:pk>/update/', LinkRequestUpdateView.as_view(), name='link-update'),
+    path('me/', MySupplierView.as_view(), name='my_supplier'),
     path('', include(router.urls)),
 ]

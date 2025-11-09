@@ -2,20 +2,15 @@ import axiosClient from "./axiosClient";
 
 export const supplierApi = {
   async getMySupplier() {
-    const res = await axiosClient.get("suppliers/");
+    const res = await axiosClient.get("/suppliers/me/");
     const data = res.data;
-
-    // ✅ normalize return
     if (Array.isArray(data)) return data[0];
     if (data?.results) return data.results[0];
     return data;
   },
-
   async getEmployees(supplierId) {
-    return axiosClient.get(`suppliers/${supplierId}/employees/`);
-  },
-  async getEmployees(supplierId) {
-    const res = await axiosClient.get(`suppliers/${supplierId}/employees/`);
+    if(!supplierId) throw new Error("supplierId is required");
+    const res = await axiosClient.get(`/suppliers/${supplierId}/employees/`);
     return res.data.employees;
   },
   async toggleEmployee(supplierId, employeeId) {

@@ -67,7 +67,7 @@ const ConsumerPage = () => {
       ) : (
         <ul>
           {orders.map((o) => (
-            <li key={o.id}>
+            <li key={o.id || `${o.product}-${o.quantity}-${Math.random()}`}>
               Product #{o.product} — Qty: {o.quantity} — Status: <b>{o.status}</b>
             </li>
           ))}

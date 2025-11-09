@@ -3,6 +3,8 @@ from .models import Product
 from .serializers import ProductSerializer
 from users.permissions import IsOwnerOrManager, IsOwnerManagerOrReadOnly
 from suppliers.models import LinkRequest
+from rest_framework.response import Response
+from rest_framework import status
 
 class ProductListCreateView(generics.ListCreateAPIView):
     serializer_class = ProductSerializer
@@ -72,3 +74,20 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
             return Product.objects.filter(supplier_id__in=accepted_supplier_ids)
 
         return Product.objects.none()
+
+    def partial_update(self, request, *args, **kwargs):
+        product = self.get_object()
+        user = request.user
+
+        if user.role == "manager":
+            allowed_fields = {"price", "stock"}
+            update_data = {field: value for field, value in request.data.items() if field in allowed_fields}
+            for field, value in update_data.items():
+                setattr(product, field, value)
+            product.save()
+            return Response({"message": "Product updated by manager", "data": ProductSerializer(product).data}, status=status.HTTP_200_OK)
+
+        elif user.role == "owner":
+            return super().partial_update(request, *args, **kwargs)
+
+        return Response({"detail": "You don't have permission to edit this product."}, status=status.HTTP_403_FORBIDDEN)

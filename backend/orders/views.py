@@ -12,18 +12,31 @@ class OrderListCreateView(generics.ListCreateAPIView):
         user = self.request.user
         if user.role == 'consumer':
             return Order.objects.filter(consumer=user)
-        elif user.role in ['manager', 'sales', 'owner']:
-            return Order.objects.filter(product__supplier__owner=user)
+        elif user.role in ['manager', 'sales']:
+            if user.supplier:
+                return Order.objects.filter(product__supplier=user.supplier)
+            return Order.objects.none()
+        elif user.role == 'owner':
+            suppliers = user.owned_suppliers.all()
+            return Order.objects.filter(product__supplier__in=suppliers)
         return Order.objects.none()
 
     def perform_create(self, serializer):
         user = self.request.user
         product_id = self.request.data.get('product')
-        quantity = int(self.request.data.get('quantity', 1))
+        quantity_raw = int(self.request.data.get('quantity', 1))
 
         # Ensure only consumers can order
         if user.role != "consumer":
             raise PermissionError("Only consumers can place orders.")
+
+        try:
+            quantity = int(quantity_raw)
+        except (TypeError, ValueError):
+            raise ValueError(f"Invalid quantity value: {quantity_raw}")
+
+        if quantity <= 0:
+            raise ValueError("Quantity must be greater than zero.")
 
         try:
             product = Product.objects.get(id=product_id)

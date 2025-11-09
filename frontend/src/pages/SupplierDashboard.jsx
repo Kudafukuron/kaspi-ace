@@ -15,8 +15,8 @@ const SupplierDashboard = () => {
         const staff = await supplierApi.getEmployees(data.id);
         setEmployees(staff);
       } catch (err) {
-        console.error("Error loading supplier data:", err);
-        setError("Failed to load supplier or employees.");
+        console.error("SupplierDashboard: Error loading supplier data:", err);
+        setError("SupplierDashboard: Failed to load supplier or employees.");
       } finally {
         setLoading(false);
       }
@@ -33,7 +33,7 @@ const SupplierDashboard = () => {
         )
       );
     } catch (err) {
-      alert("Failed to toggle employee status.");
+      alert("SupplierDashboard: Failed to toggle employee status.");
     }
   };
 
@@ -42,7 +42,7 @@ const SupplierDashboard = () => {
       await supplierApi.deleteEmployee(supplier.id, employeeId);
       setEmployees((prev) => prev.filter((e) => e.id !== employeeId));
     } catch (err) {
-      alert("Failed to delete employee.");
+      alert("SupplierDashboard: Failed to delete employee.");
     }
   };
 

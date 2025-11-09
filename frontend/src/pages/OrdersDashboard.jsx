@@ -37,6 +37,23 @@ const OrdersDashboard = () => {
   if (loading) return <p>Loading orders...</p>;
   if (error) return <p style={{ color: "red" }}>{error}</p>;
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "pending":
+        return "orange";
+      case "confirmed":
+        return "blue";
+      case "shipped":
+        return "purple";
+      case "delivered":
+        return "green";
+      case "cancelled":
+        return "red";
+      default:
+        return "gray";
+    }
+  };
+
   return (
     <div style={{ padding: "20px" }}>
       <h2>📦 Supplier Orders Dashboard</h2>
@@ -63,22 +80,55 @@ const OrdersDashboard = () => {
                 <td>{o.consumer}</td>
                 <td>{o.quantity}</td>
                 <td>${o.total_price}</td>
-                <td>{o.status}</td>
+                <td style={{ color: getStatusColor(o.status), fontWeight: "bold" }}>
+                  {o.status}
+                </td>
                 <td>
                   {o.status === "pending" && (
-                    <button onClick={() => handleUpdateStatus(o.id, "confirmed")}>
-                      ✅ Confirm
-                    </button>
+                    <>
+                      <button
+                        onClick={() => handleUpdateStatus(o.id, "confirmed")}
+                        style={{ backgroundColor: "#4caf50", color: "white", marginRight: "5px" }}
+                      >
+                        ✅ Confirm
+                      </button>
+                      <button
+                        onClick={() => handleUpdateStatus(o.id, "cancelled")}
+                        style={{ backgroundColor: "#ff4d4d", color: "white" }}
+                      >
+                        ❌ Cancel
+                      </button>
+                    </>
                   )}
+
                   {o.status === "confirmed" && (
-                    <button onClick={() => handleUpdateStatus(o.id, "shipped")}>
-                      🚚 Ship
-                    </button>
+                    <>
+                      <button
+                        onClick={() => handleUpdateStatus(o.id, "shipped")}
+                        style={{ backgroundColor: "#2196f3", color: "white", marginRight: "5px" }}
+                      >
+                        🚚 Ship
+                      </button>
+                      <button
+                        onClick={() => handleUpdateStatus(o.id, "cancelled")}
+                        style={{ backgroundColor: "#ff4d4d", color: "white" }}
+                      >
+                        ❌ Cancel
+                      </button>
+                    </>
                   )}
+
                   {o.status === "shipped" && (
-                    <button onClick={() => handleUpdateStatus(o.id, "delivered")}>
+                    <button
+                      onClick={() => handleUpdateStatus(o.id, "delivered")}
+                      style={{ backgroundColor: "#9c27b0", color: "white" }}
+                    >
                       📦 Deliver
                     </button>
+                  )}
+
+                  {o.status === "cancelled" && (
+                    <span style={{ color: "red" }}>Order Cancelled</span>
                   )}
                 </td>
               </tr>

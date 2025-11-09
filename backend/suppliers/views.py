@@ -54,27 +54,67 @@ class ActivateSupplierView(APIView):
 class SupplierEmployeesView(APIView):
     permission_classes = [IsAuthenticated, IsOwnerOrManager]
 
-    def get(self, request, supplier_id):
+    def get(self, request, supplier_id=None):
         try:
-            supplier = Supplier.objects.get(id=supplier_id)
-        
-            # filter to supplier.
-            employees = User.objects.filter(supplier=supplier).values(
-                "id", "username", "email", "role", "is_active"
-            ).exclude(role="consumer")
+            user = request.user
+
+            supplier = None
+            if supplier_id:
+                supplier = Supplier.objects.filter(id=supplier_id).first()
+
+            if not supplier:
+                if user.role == "owner":
+                    supplier = Supplier.objects.filter(owner=user).first()
+
+                elif user.role in ["manager", "sales"]:
+                    supplier = user.supplier
+
+                else:
+                    return Response({"detail": "Access denied."}, status=403)
+
+            #if not supplier:
+            #    return Response({"detail": "Supplier not found."}, status=404)
+
+            employees = (
+                User.objects.filter(supplier=supplier)
+                .exclude(role="consumer")
+                .values("id", "username", "email", "role", "is_active")
+            )
 
             return Response({
                 "supplier": supplier.name,
                 "employees": list(employees)
             })
-        
-        # bruh, 500 errors are just solved by adding model views.
-        except Supplier.DoesNotExist:
-            return Response({"detail": "Supplier not found."}, status=404)
+
         except Exception as e:
             import traceback
             traceback.print_exc()
             return Response({"error": str(e)}, status=500)
+
+class MySupplierView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        if user.role == "owner":
+            supplier = Supplier.objects.filter(owner=user).first()
+
+        elif user.role in ["manager", "sales"]:
+            supplier = user.supplier
+
+        else:
+            return Response({"detail": "Not a supplier user."}, status=403)
+
+        #if not supplier:
+        #    return Response({"detail": "Supplier not found."}, status=404)
+
+        return Response({
+            "id": supplier.id,
+            "name": supplier.name,
+            "is_active": supplier.is_active,
+            "owner": supplier.owner_id
+        })
         
 class EmployeeManageView(APIView):
     permission_classes = [IsAuthenticated, IsOwnerOrManager]
@@ -167,7 +207,6 @@ class LinkRequestCreateView(generics.CreateAPIView):
 
         serializer.save(consumer=user, supplier=supplier)
 
-
 class LinkRequestListView(generics.ListAPIView):
     # get orders for manager and owner.
     serializer_class = LinkRequestSerializer
@@ -182,7 +221,6 @@ class LinkRequestListView(generics.ListAPIView):
         elif user.role == 'consumer':
             return LinkRequest.objects.filter(consumer=user)
         return LinkRequest.objects.none()
-
 
 class LinkRequestUpdateView(generics.UpdateAPIView):
     # reject or accept the link request.

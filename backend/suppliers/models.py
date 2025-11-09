@@ -8,9 +8,9 @@ class Supplier(models.Model):
     phone = models.CharField(max_length=50, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
     owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        'users.User',
         on_delete=models.CASCADE,
-        related_name='suppliers_owned'
+        related_name='owned_suppliers',
     )
     is_active = models.BooleanField(default=True) # Owner or manager can suspend the supplier account
     created_at = models.DateTimeField(auto_now_add=True)

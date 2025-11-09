@@ -12,7 +12,7 @@ function LoginPage() {
     e.preventDefault();
     try {
       const tokens = await authApi.login(username, password);
-      localStorage.setItem("token", tokens.access);
+      localStorage.setItem("access", tokens.access);
       localStorage.setItem("refresh", tokens.refresh);
       const user = await authApi.getProfile();
       localStorage.setItem("user", JSON.stringify(user));

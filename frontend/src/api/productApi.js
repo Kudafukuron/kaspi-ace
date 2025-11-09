@@ -1,6 +1,6 @@
 import axiosClient from "./axiosClient";
 
-const productApi = {
+export const productApi = {
   // Get products based on roles
   getAll: async () => {
     const response = await axiosClient.get("/products/");
@@ -30,6 +30,11 @@ const productApi = {
     const response = await axiosClient.delete(`/products/${id}/`);
     return response.data;
   },
+
+  async update(id, data) {
+    const res = await axiosClient.patch(`/products/${id}/`, data);
+    return res.data;
+  },
 };
 
-export default productApi;
+// export default productApi;

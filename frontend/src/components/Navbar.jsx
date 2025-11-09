@@ -44,7 +44,10 @@ const Navbar = () => {
         )}
 
         {user?.role === "consumer" && (
-          <Link to="/consumer" style={{ color: "#fff" }}>Shop</Link>
+          <>
+            <Link to="/consumer" style={{ color: "#fff" }}>Shop</Link>
+            <Link to="/suppliers" style={{ color: "#fff" }}>Available Suppliers</Link>
+          </>
         )}
 
         <button
