@@ -76,7 +76,7 @@ const OwnerDashboard = () => {
     <div style={{ padding: "20px" }}>
       <h2>🏭 Owner Product Dashboard</h2>
 
-      <form onSubmit={handleAdd} style={{ marginBottom: "30px" , marginBottom: "30px",
+      <form onSubmit={handleAdd} style={{ marginBottom: "30px",
           padding: "20px",
           display: "flex",
           gap: "30px",

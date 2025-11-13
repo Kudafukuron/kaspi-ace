@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 from .serializers import UserSerializer
 from .permissions import IsOwner, IsOwnerOrManager
 from .models import User
+from suppliers.models import Supplier, LinkRequest
 
 User = get_user_model()
 
@@ -95,3 +96,79 @@ class DeactivateUserView(APIView):
                 "is_active": target_user.is_active
             }
         }, status=status.HTTP_200_OK)
+
+class GetSalesmanForSupplier(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, supplier_id):
+        # Make sure the consumer is linked to this supplier
+        is_linked = LinkRequest.objects.filter(
+            consumer=request.user,
+            supplier_id=supplier_id,
+            status="accepted"
+        ).exists()
+
+        if not is_linked:
+            return Response({"error": "Not linked to this supplier"}, status=403)
+
+        salesman = User.objects.filter(
+            role="sales",
+            supplier_id=supplier_id
+        ).first()
+
+        if not salesman:
+            return Response({"salesman_id": None, "message": "No sales managers"}, status=200)
+
+        return Response({
+            "salesman_id": salesman.id,
+            "salesman_username": salesman.username
+        })
+    
+class MySuppliersView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        consumer = request.user
+
+        links = LinkRequest.objects.filter(
+            consumer=consumer,
+            status="accepted"
+        )
+
+        suppliers = [
+            {
+                "id": link.supplier.id,
+                "name": link.supplier.name,
+            }
+            for link in links
+        ]
+
+        return Response(suppliers)
+
+class SupplierConsumersView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        # Salesman must belong to a supplier
+        if user.role != "sales" or not user.supplier:
+            return Response({"error": "Not a salesman"}, status=403)
+
+        supplier = user.supplier
+
+        # Consumers with accepted link
+        links = LinkRequest.objects.filter(
+            supplier=supplier,
+            status="accepted"
+        )
+
+        consumers = [
+            {
+                "id": link.consumer.id,
+                "username": link.consumer.username,
+            }
+            for link in links
+        ]
+
+        return Response(consumers)

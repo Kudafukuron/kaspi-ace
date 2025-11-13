@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../api/api_service.dart';
 import 'link_request_screen.dart';
+import 'login_screen.dart';
+import 'chat_screen.dart';
+import 'choose_supplier.dart';
 
 class ProductsScreen extends StatefulWidget {
   final ApiService api;
@@ -40,9 +43,9 @@ class _ProductsScreenState extends State<ProductsScreen> {
     }
   }
 
-  Future<void> orderProduct(int productId) async {
+  Future<void> orderProduct(int productId, int quantity) async {
     try {
-      await api.placeOrder(productId, 1);
+      await api.placeOrder(productId, quantity);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("✅ Order placed!")),
       );
@@ -72,6 +75,40 @@ class _ProductsScreenState extends State<ProductsScreen> {
                 ),
               );
             },
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: "Logout",
+            onPressed: () async {
+              await api.logout();  // Clear tokens
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => LoginScreen(api: api),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.chat),
+            onPressed: () async {
+              final suppliers = await api.getMySuppliers();
+
+              if (suppliers.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("No linked suppliers")),
+                );
+                return;
+              }
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      ChooseSupplierScreen(api: api, suppliers: suppliers),
+                ),
+              );
+            }
           ),
         ],
       ),
@@ -113,7 +150,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                       const Spacer(),
 
                       ElevatedButton(
-                        onPressed: () => orderProduct(p["id"]),
+                        onPressed: () => orderProduct(p["id"], qty),
                         child: const Text("Order"),
                       ),
                     ],
@@ -126,7 +163,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
             title: Text(p["name"]),
             subtitle: Text("\$${p["price"]} — Stock: ${p["stock"]}"),
             trailing: ElevatedButton(
-              onPressed: () => orderProduct(p["id"]),
+              onPressed: () => orderProduct(p["id"], qty),
               child: const Text("Order"),
             ),
           );

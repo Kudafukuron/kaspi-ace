@@ -8,22 +8,27 @@ import ConsumerPage from "./pages/ConsumerPage";
 import SuppliersList from "./pages/SuppliersList";
 import LinkRequestsDashboard from "./pages/LinkRequestsDashboard";
 import SupplierDashboard from "./pages/SupplierDashboard";
+import ChatPage from "./chat/ChatPage";
 
 function App() {
+
+  const token = localStorage.getItem("access");
+
   return (
     <BrowserRouter>
       <Navbar />
-        <Routes>
-          <Route path="/" element={<LoginPage />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/owner" element={<OwnerDashboard />} />
-          <Route path="/orders" element={<OrdersDashboard />} />
-          <Route path="/consumer" element={<ConsumerPage />} />
-          <Route path="/suppliers" element={<SuppliersList />} />
-          <Route path="/dashboard/links" element={<LinkRequestsDashboard />} />
-          <Route path="/dashboard/orders" element={<OrdersDashboard />} />
-          <Route path="/dashboard/supplier" element={<SupplierDashboard />} />
-        </Routes>
+      <Routes>
+        <Route path="/" element={<LoginPage />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/owner" element={<OwnerDashboard />} />
+        <Route path="/orders" element={<OrdersDashboard />} />
+        <Route path="/consumer" element={<ConsumerPage />} />
+        <Route path="/suppliers" element={<SuppliersList />} />
+        <Route path="/dashboard/links" element={<LinkRequestsDashboard />} />
+        <Route path="/dashboard/orders" element={<OrdersDashboard />} />
+        <Route path="/dashboard/supplier" element={<SupplierDashboard />} />
+        <Route path="/chat" element={<ChatPage token={token} />} />
+      </Routes>
     </BrowserRouter>
   );
 }

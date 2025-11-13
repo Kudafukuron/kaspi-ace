@@ -17,5 +17,8 @@ urlpatterns = [
     path('api/products/', include('products.urls')),
     # Orders
     path('api/orders/', include('orders.urls')),
-
+    # Users
+    path("api/users/", include("users.urls")),
+    # Chat
+    path("api/chat/", include("chat.urls")),
 ]

@@ -1,18 +1,21 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   static const String baseUrl = "http://127.0.0.1:8000/api";
+
   String? accessToken;
   String? refreshToken;
+  int? loggedInUserId;
+  int? salesmanId;
 
-  /// ✅ Headers getter (automatically adds token)
   Map<String, String> get headers => {
         'Content-Type': 'application/json',
         if (accessToken != null) 'Authorization': 'Bearer $accessToken',
       };
 
-  /// ✅ Login: gets access + refresh tokens
+  // ---------------- LOGIN ----------------
   Future<bool> login(String username, String password) async {
     final url = Uri.parse("$baseUrl/auth/token/");
     final response = await http.post(
@@ -25,6 +28,13 @@ class ApiService {
       final data = json.decode(response.body);
       accessToken = data["access"];
       refreshToken = data["refresh"];
+      loggedInUserId = data["user_id"];
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString("accessToken", accessToken!);
+      await prefs.setString("refreshToken", refreshToken!);
+      await prefs.setInt("loggedInUserId", loggedInUserId!);
+
       print("✅ Logged in! Access token: $accessToken");
       return true;
     } else {
@@ -33,7 +43,31 @@ class ApiService {
     }
   }
 
-  /// ✅ Get available products for consumer
+  // ---------------- TOKEN LOAD ----------------
+  Future<void> loadTokens() async {
+    final prefs = await SharedPreferences.getInstance();
+    accessToken = prefs.getString("accessToken");
+    refreshToken = prefs.getString("refreshToken");
+    loggedInUserId = prefs.getInt("loggedInUserId");
+
+    print("🔄 Loaded saved tokens: $accessToken");
+  }
+
+  // ---------------- LOGOUT ----------------
+  Future<void> logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove("accessToken");
+    await prefs.remove("refreshToken");
+    await prefs.remove("loggedInUserId");
+
+    accessToken = null;
+    refreshToken = null;
+    loggedInUserId = null;
+
+    print("🔒 Logged out");
+  }
+
+  // ---------------- PRODUCTS ----------------
   Future<List<dynamic>> getProducts() async {
     final url = Uri.parse("$baseUrl/products/");
     final response = await http.get(url, headers: headers);
@@ -45,13 +79,7 @@ class ApiService {
     }
   }
 
-  /// ✅ Place order
   Future<void> placeOrder(int productId, int quantity) async {
-    onPressed: () {
-      print("ordering $quantity of ${p["name"]}");
-      orderProduct(p["productId"]);
-    },
-
     final url = Uri.parse("$baseUrl/orders/");
     final response = await http.post(
       url,
@@ -62,12 +90,12 @@ class ApiService {
       }),
     );
 
-    if (response.statusCode != 201 && response.statusCode != 200) {
+    if (response.statusCode != 200 && response.statusCode != 201) {
       throw Exception("Order failed: ${response.body}");
     }
   }
 
-  /// ✅ Get all suppliers
+  // ---------------- SUPPLIERS ----------------
   Future<List<dynamic>> getSuppliers() async {
     final url = Uri.parse("$baseUrl/suppliers/");
     final response = await http.get(url, headers: headers);
@@ -75,12 +103,21 @@ class ApiService {
     if (response.statusCode == 200) {
       return json.decode(response.body);
     } else {
-      print("❌ Failed to load suppliers: ${response.body}");
       throw Exception("Failed to load suppliers");
     }
   }
 
-  /// ✅ Send link request to supplier
+  Future<List<dynamic>> getMySuppliers() async {
+    final url = Uri.parse("$baseUrl/users/my-suppliers/");
+    final response = await http.get(url, headers: headers);
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception("Failed to load linked suppliers");
+    }
+  }
+
   Future<bool> sendLinkRequest(int supplierId) async {
     final url = Uri.parse("$baseUrl/suppliers/links/create/");
     final response = await http.post(
@@ -89,12 +126,58 @@ class ApiService {
       body: json.encode({'supplier': supplierId}),
     );
 
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      print("✅ Link request sent: ${response.body}");
-      return true;
+    return response.statusCode == 200 || response.statusCode == 201;
+  }
+
+  // ---------------- SALESMAN ----------------
+  Future<void> fetchSalesman() async {
+    final url = Uri.parse("$baseUrl/users/my-salesman/");
+    final response = await http.get(url, headers: headers);
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      salesmanId = data["salesman_id"];
+      print("📌 Salesman ID loaded: $salesmanId");
+    }
+  }
+
+  Future<int?> fetchSalesmanForSupplier(int supplierId) async {
+    final url = Uri.parse("$baseUrl/users/salesman/$supplierId/");
+    final response = await http.get(url, headers: headers);
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data["salesman_id"];
     } else {
-      print("❌ Failed to send link request: ${response.body}");
-      return false;
+      return null;
+    }
+  }
+
+  // ---------------- CHAT ----------------
+  Future<List<dynamic>> getChatHistory(int otherUserId) async {
+    final url = Uri.parse("$baseUrl/chat/history/$otherUserId/");
+    final response = await http.get(url, headers: headers);
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception("Failed to load chat history");
+    }
+  }
+
+  Future<void> sendMessage(int receiverId, String content) async {
+    final url = Uri.parse("$baseUrl/chat/send/");
+    final response = await http.post(
+      url,
+      headers: headers,
+      body: json.encode({
+        "receiver": receiverId,
+        "content": content,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Failed to send message");
     }
   }
 }

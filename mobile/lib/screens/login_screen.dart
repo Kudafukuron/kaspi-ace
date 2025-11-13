@@ -3,17 +3,19 @@ import '../api/api_service.dart';
 import 'products_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final ApiService api;
+  const LoginScreen({super.key, required this.api});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final ApiService api = ApiService();
   final _username = TextEditingController();
   final _password = TextEditingController();
   bool loading = false;
+
+  ApiService get api => widget.api;
 
   Future<void> login() async {
     setState(() => loading = true);

@@ -50,6 +50,14 @@ const Navbar = () => {
           </>
         )}
 
+        {user?.role === "sales" && (
+          <Link to="/chat" className="nav-button">
+            💬 Chat
+          </Link>
+        )}
+
+
+
         <button
           onClick={handleLogout}
           style={{
