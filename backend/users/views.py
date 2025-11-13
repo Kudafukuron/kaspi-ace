@@ -47,6 +47,10 @@ class CreateManagerView(APIView):
         serializer = UserSerializer(data=data)
         if serializer.is_valid():
             user = serializer.save()
+            user.is_staff = True
+            user.is_superuser = False
+            user.supplier = request.user.supplier 
+            user.save()
             return Response({
                 "message": "Manager created successfully",
                 "user": UserSerializer(user).data
@@ -63,6 +67,10 @@ class CreateSalesView(APIView):
         serializer = UserSerializer(data=data)
         if serializer.is_valid():
             user = serializer.save()
+            user.is_staff = True
+            user.is_superuser = False
+            user.supplier = request.user.supplier 
+            user.save()
             return Response({
                 "message": "Sales account created successfully, suii",
                 "user": UserSerializer(user).data

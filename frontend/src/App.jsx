@@ -9,6 +9,8 @@ import SuppliersList from "./pages/SuppliersList";
 import LinkRequestsDashboard from "./pages/LinkRequestsDashboard";
 import SupplierDashboard from "./pages/SupplierDashboard";
 import ChatPage from "./chat/ChatPage";
+import CreateManager from "./pages/CreateManager";
+import CreateSales from "./pages/CreateSales";
 
 function App() {
 
@@ -28,6 +30,8 @@ function App() {
         <Route path="/dashboard/orders" element={<OrdersDashboard />} />
         <Route path="/dashboard/supplier" element={<SupplierDashboard />} />
         <Route path="/chat" element={<ChatPage token={token} />} />
+        <Route path="/create-manager" element={<CreateManager token={token} />} />
+        <Route path="/create-sales" element={<CreateSales token={token} />} />
       </Routes>
     </BrowserRouter>
   );

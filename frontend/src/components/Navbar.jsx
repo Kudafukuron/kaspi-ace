@@ -30,6 +30,8 @@ const Navbar = () => {
             <Link to="/dashboard/links" style={{ color: "#fff" }}>Link Requests</Link>
             <Link to="/dashboard/supplier" style={{ color: "#fff" }}>Company Employees</Link>
             <Link to="/dashboard/orders" style={{ color: "#fff" }}>Orders</Link>
+            <Link to="/create-manager" style={{ color: "#fff" }}>Create Manager</Link>
+            <Link to="/create-sales" style={{ color: "#fff" }}>Create Salesman</Link>
           </>
         )}
 
@@ -51,26 +53,26 @@ const Navbar = () => {
         )}
 
         {user?.role === "sales" && (
-          <Link to="/chat" className="nav-button">
-            💬 Chat
-          </Link>
+          <>
+            <Link to="/dashboard" style={{ color: "#fff" }}>Dashboard</Link>
+            <Link to="/chat" style={{ color: "#fff" }}>Chat</Link>
+          </>
         )}
-
-
-
-        <button
-          onClick={handleLogout}
-          style={{
-            background: "crimson",
-            border: "none",
-            color: "#fff",
-            padding: "5px 10px",
-            borderRadius: "5px",
-            cursor: "pointer",
-          }}
-        >
-          Logout
-        </button>
+        {user && (
+          <button
+            onClick={handleLogout}
+            style={{
+              background: "crimson",
+              border: "none",
+              color: "#fff",
+              padding: "5px 10px",
+              borderRadius: "5px",
+              cursor: "pointer",
+            }}
+          >
+            Logout
+          </button>
+        )}
       </div>
     </nav>
   );

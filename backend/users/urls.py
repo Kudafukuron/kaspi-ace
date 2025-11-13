@@ -8,7 +8,7 @@ urlpatterns = [
     path('me/', MeView.as_view(), name='me'),
     path('register/consumer/', ConsumerRegisterView.as_view(), name='register_consumer'),
     path('create-manager/', CreateManagerView.as_view(), name='create_manager'),
-    path('create-sales/', CreateSalesView.as_view(), name='create_sales'),
+    path("create-sales/", CreateSalesView.as_view()),
     path('<int:user_id>/deactivate/', DeactivateUserView.as_view(), name='deactivate_user'),
     path("my-suppliers/", MySuppliersView.as_view()),
     path("salesman/<int:supplier_id>/", GetSalesmanForSupplier.as_view()),
