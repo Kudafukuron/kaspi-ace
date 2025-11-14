@@ -5,6 +5,8 @@ from users.permissions import IsOwnerOrManager, IsOwnerManagerOrReadOnly
 from suppliers.models import LinkRequest
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 
 class ProductListCreateView(generics.ListCreateAPIView):
     serializer_class = ProductSerializer
@@ -91,3 +93,11 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
             return super().partial_update(request, *args, **kwargs)
 
         return Response({"detail": "You don't have permission to edit this product."}, status=status.HTTP_403_FORBIDDEN)
+
+class ProductsBySupplierView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, supplier_id):
+        products = Product.objects.filter(supplier_id=supplier_id)
+        serializer = ProductSerializer(products, many=True)
+        return Response(serializer.data)

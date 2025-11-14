@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'screens/login_screen.dart';
 import 'api/api_service.dart';
 import 'screens/products_screen.dart';
+import 'screens/suppliers_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,7 +28,7 @@ class SupplierConsumerApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
       ),
       home: isLoggedIn
-          ? ProductsScreen(api: api)
+          ? SuppliersScreen(api: api)
           : LoginScreen(api: api),
     );
   }
