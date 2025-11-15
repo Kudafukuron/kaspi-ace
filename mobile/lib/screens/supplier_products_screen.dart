@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../api/api_service.dart';
 import 'cart_screen.dart';
+import 'chat_screen.dart';
 
 class SupplierProductsScreen extends StatefulWidget {
   final ApiService api;
@@ -76,7 +77,36 @@ class _SupplierProductsScreenState extends State<SupplierProductsScreen> {
     }).toList();
 
     return Scaffold(
-      appBar: AppBar(title: Text(widget.supplierName)),
+      appBar: AppBar(
+        title: Text(widget.supplierName),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.chat_bubble_outline),
+            onPressed: () async {
+              // Get this supplier's salesman
+              final salesmanId = await widget.api.fetchSalesmanForSupplier(widget.supplierId);
+
+              if (salesmanId == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("No salesman assigned to this supplier")),
+                );
+                return;
+              }
+
+              // Navigate to chat
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ChatScreen(
+                    api: widget.api,
+                    salesmanId: salesmanId,
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
       body: Column(
         children: [
           Padding(

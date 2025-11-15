@@ -7,6 +7,8 @@ from .serializers import UserSerializer
 from .permissions import IsOwner, IsOwnerOrManager
 from .models import User
 from suppliers.models import Supplier, LinkRequest
+from rest_framework_simplejwt.views import TokenObtainPairView
+from .auth import MyTokenObtainPairSerializer
 
 User = get_user_model()
 
@@ -180,3 +182,6 @@ class SupplierConsumersView(APIView):
         ]
 
         return Response(consumers)
+
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../api/api_service.dart';
 import 'supplier_products_screen.dart';
+import 'package:mobile/screens/login_screen.dart';
 
 class SuppliersScreen extends StatefulWidget {
   final ApiService api;
@@ -39,7 +40,21 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
     if (loading) return const Center(child: CircularProgressIndicator());
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Your Suppliers")),
+      appBar: AppBar(
+        title: const Text("Your Suppliers"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              await widget.api.logout();
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => LoginScreen(api: widget.api)),
+              );
+            },
+          ),
+        ],
+      ),
       body: ListView.builder(
         itemCount: suppliers.length,
         itemBuilder: (context, i) {
