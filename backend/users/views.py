@@ -8,7 +8,7 @@ from .permissions import IsOwner, IsOwnerOrManager
 from .models import User
 from suppliers.models import Supplier, LinkRequest
 from rest_framework_simplejwt.views import TokenObtainPairView
-from .auth import MyTokenObtainPairSerializer
+from .serializers import MyTokenObtainPairSerializer
 
 User = get_user_model()
 
@@ -18,11 +18,11 @@ class MeView(APIView):
     def get(self, request):
         user = request.user
         return Response({
-            "id": user.id,
+            "id": request.user.id,
             "username": user.username,
             "email": user.email,
             "role": getattr(user, "role", None)
-        })
+        }, status=200)
 
 class ConsumerRegisterView(APIView):
     permission_classes = [IsAuthenticated]

@@ -32,6 +32,7 @@ const Navbar = () => {
             <Link to="/dashboard/orders" style={{ color: "#fff" }}>Orders</Link>
             <Link to="/create-manager" style={{ color: "#fff" }}>Create Manager</Link>
             <Link to="/create-sales" style={{ color: "#fff" }}>Create Salesman</Link>
+            <Link to="/complaints">Complaints</Link>
           </>
         )}
 
@@ -42,6 +43,7 @@ const Navbar = () => {
             <Link to="/dashboard/supplier" style={{ color: "#fff" }}>Company Employees</Link>
             <Link to="/dashboard/orders" style={{ color: "#fff" }}>Orders</Link>
             <Link to="/owner" style={{ color: "#fff" }}>Add Product</Link>
+            <Link to="/complaints">Complaints</Link>
           </>
         )}
 
@@ -56,6 +58,7 @@ const Navbar = () => {
           <>
             <Link to="/dashboard" style={{ color: "#fff" }}>Dashboard</Link>
             <Link to="/chat" style={{ color: "#fff" }}>Chat</Link>
+            <Link to="/complaints">Complaints</Link>
           </>
         )}
         {user && (

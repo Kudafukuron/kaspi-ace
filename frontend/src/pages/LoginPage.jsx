@@ -12,15 +12,24 @@ function LoginPage() {
     e.preventDefault();
     try {
       const tokens = await authApi.login(username, password);
+
+      // Save tokens
       localStorage.setItem("access", tokens.access);
       localStorage.setItem("refresh", tokens.refresh);
+
+      // Save user_id from the token response
+      localStorage.setItem("user_id", tokens.user_id);
+
+      // Save profile
       const user = await authApi.getProfile();
       localStorage.setItem("user", JSON.stringify(user));
-      navigate("/dashboard"); // Dashboard 
+
+      navigate("/dashboard");
     } catch (err) {
       setError("Wrong given credentials. Try again, bro.");
     }
   };
+
 
   return (
     <div style={styles.container}>

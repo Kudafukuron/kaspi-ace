@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../api/api_service.dart';
 import 'supplier_products_screen.dart';
 import 'package:mobile/screens/login_screen.dart';
+import 'create_complaint_screen.dart';
 
 class SuppliersScreen extends StatefulWidget {
   final ApiService api;
@@ -47,9 +48,16 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
             icon: const Icon(Icons.logout),
             onPressed: () async {
               await widget.api.logout();
-              Navigator.pushReplacement(
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.report),
+            onPressed: () {
+              Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => LoginScreen(api: widget.api)),
+                MaterialPageRoute(
+                  builder: (_) => CreateComplaintScreen(api: widget.api),
+                ),
               );
             },
           ),

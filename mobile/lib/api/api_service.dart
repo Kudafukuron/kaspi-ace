@@ -31,41 +31,48 @@ class ApiService {
       }),
     );
 
-    print("🔍 RAW LOGIN RESPONSE:");
+    print("RAW LOGIN RESPONSE:");
     print(response.body);
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
 
-      print("🔍 Parsed login data: $data");
+      accessToken = data["access"];
+      refreshToken = data["refresh"];
+      //loggedInUserId = int.tryParse(data["user_id"] ?? "");
 
-      final access = data["access"];
-      final refresh = data["refresh"];
+      // print("Parsed user_id → $loggedInUserId");
 
-      if (access == null || refresh == null) {
-        print("❌ Missing token fields");
+      final rawUserId = data["user_id"];
+
+      if (rawUserId is int) {
+        loggedInUserId = rawUserId;
+      } else if (rawUserId is String) {
+        loggedInUserId = int.tryParse(rawUserId);
+      } else {
+        loggedInUserId = null;
+      }
+
+      print("Parsed user_id → $loggedInUserId");
+
+      if (loggedInUserId == null) {
+        print("❌ ERROR: user_id missing in login response");
         return false;
       }
 
-      accessToken = access;
-      refreshToken = refresh;
 
-      // We DO NOT set user_id anymore
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString("accessToken", accessToken!);
       await prefs.setString("refreshToken", refreshToken!);
+      await prefs.setInt("loggedInUserId", loggedInUserId!);
 
-      // you can remove loggedInUserId completely if unused
       loggedIn.value = true;
-
-
       return true;
     }
 
     print("❌ Login failed: ${response.body}");
     return false;
   }
-
 
   // ---------------- LOAD TOKENS ----------------
   Future<void> loadTokens() async {
@@ -75,11 +82,13 @@ class ApiService {
     refreshToken = prefs.getString("refreshToken");
     loggedInUserId = prefs.getInt("loggedInUserId");
 
-    // Update login status
-    loggedIn.value = accessToken != null;
+    print("Loaded access token: $accessToken");
+    print("Loaded userId: $loggedInUserId");
 
-    print("🔄 Loaded token: $accessToken");
+    loggedIn.value = accessToken != null && loggedInUserId != null;
   }
+
+
 
   // ---------------- LOGOUT ----------------
   Future<void> logout() async {
@@ -174,4 +183,45 @@ class ApiService {
 
     print("✅ Message sent successfully: ${res.body}");
   }
+
+  // ---------------- COMPLAINTS ----------------
+
+  Future<void> createComplaint(String subject, String message) async {
+    final res = await http.post(
+      Uri.parse("$baseUrl/complaints/create/"),
+      headers: headers,
+      body: json.encode({
+        "subject": subject,
+        "message": message,
+      }),
+    );
+
+    if (res.statusCode != 201) {
+      throw Exception("Failed to create complaint: ${res.body}");
+    }
+  }
+
+  Future<List<dynamic>> getComplaintsForSales() async {
+    final res = await http.get(
+      Uri.parse("$baseUrl/complaints/sales/list/"),
+      headers: headers,
+    );
+    if (res.statusCode == 200) return json.decode(res.body);
+    throw Exception("Failed to load complaints");
+  }
+
+  Future<void> resolveComplaint(int id) async {
+    await http.post(
+      Uri.parse("$baseUrl/complaints/sales/$id/resolve/"),
+      headers: headers,
+    );
+  }
+
+  Future<void> escalateComplaint(int id) async {
+    await http.post(
+      Uri.parse("$baseUrl/complaints/sales/$id/escalate/"),
+      headers: headers,
+    );
+  }
+
 }

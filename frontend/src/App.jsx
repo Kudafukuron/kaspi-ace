@@ -11,6 +11,7 @@ import SupplierDashboard from "./pages/SupplierDashboard";
 import ChatPage from "./chat/ChatPage";
 import CreateManager from "./pages/CreateManager";
 import CreateSales from "./pages/CreateSales";
+import ComplaintsPage from "./pages/ComplaintsPage";
 
 function App() {
 
@@ -32,6 +33,7 @@ function App() {
         <Route path="/chat" element={<ChatPage token={token} />} />
         <Route path="/create-manager" element={<CreateManager token={token} />} />
         <Route path="/create-sales" element={<CreateSales token={token} />} />
+        <Route path="/complaints" element={<ComplaintsPage />} />
       </Routes>
     </BrowserRouter>
   );
